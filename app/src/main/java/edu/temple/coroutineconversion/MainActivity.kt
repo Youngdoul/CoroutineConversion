@@ -6,12 +6,18 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Button
 import android.widget.ImageView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     //TODO (Refactor to replace Thread code with coroutines)
 
     lateinit var cakeImageView: ImageView
+    private val coroutinesco = CoroutineScope(Dispatchers.Main)
+
 
     val handler = Handler(Looper.getMainLooper(), Handler.Callback {
         cakeImageView.alpha = it.what / 100f
@@ -24,13 +30,20 @@ class MainActivity : AppCompatActivity() {
 
         cakeImageView = findViewById(R.id.imageView)
 
-        findViewById<Button>(R.id.revealButton).setOnClickListener{
-            Thread{
-                repeat(100) {
-                    handler.sendEmptyMessage(it)
-                    Thread.sleep(40)
-                }
-            }.start()
+        findViewById<Button>(R.id.revealButton).setOnClickListener {
+            coroutinesco.launch {
+                fadeImage()
+            }
+        }
+    }
+
+    private suspend fun fadeImage() {
+        coroutinesco.launch {
+            repeat(100) { i ->
+                cakeImageView.alpha = i / 100f
+                delay(40)
+            }
         }
     }
 }
+
